@@ -84,10 +84,9 @@ public class PatientDashboardActivity extends AppCompatActivity {
                 return true;
 
             } else if (id == R.id.nav_plans) {
-                showComingSoon(
-                        "Plans 📋",
-                        "Health plans and subscriptions are on the way!\nStay tuned for updates."
-                );
+                // Navigate to Medicine Plans Activity
+                Intent intent = new Intent(PatientDashboardActivity.this, PatientPlansActivity.class);
+                startActivity(intent);
                 return true;
 
             } else if (id == R.id.nav_sos) {

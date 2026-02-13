@@ -38,7 +38,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
 
-    // Firebase BoM — manages all Firebase library versions automatically
+    // Firebase BoM – manages all Firebase library versions automatically
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")   // Realtime Database (live features)
@@ -46,6 +46,18 @@ dependencies {
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+
+    // RecyclerView for medicine list
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    // CardView for material design cards
+    implementation("androidx.cardview:cardview:1.0.0")
+
+    // CoordinatorLayout for FAB behavior
+    implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
+
+    // HTTP client for Gemini API calls (optional, using HttpURLConnection instead)
+    // implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
