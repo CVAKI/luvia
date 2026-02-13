@@ -15,20 +15,38 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Luvia">
 
-        <!-- Login Activity - Launch Activity -->
+        <!-- Splash Activity - Launch Activity -->
         <activity
-            android:name=".LoginActivity"
-            android:exported="true">
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- Main Activity -->
+        <!-- Login Activity -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+
+        <!-- Main Activity - Role Selection -->
         <activity
             android:name=".MainActivity"
             android:exported="false" />
+
+        <!-- Doctor Dashboard Activity -->
+        <activity
+            android:name=".DoctorDashboardActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <!-- Patient Dashboard Activity -->
+        <activity
+            android:name=".PatientDashboardActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
 
     </application>
 

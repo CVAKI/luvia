@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Reduced padding from 150dp to 24dp for larger logo -->
+    <item
+        android:drawable="@drawable/ic_luvia_forground"
+        android:top="20dp"
+        android:bottom="20dp"
+        android:left="20dp"
+        android:right="20dp"/>
+</layer-list>

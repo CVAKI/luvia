@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/splash_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- Centered Logo -->
+    <ImageView
+        android:id="@+id/iv_logo"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        android:layout_centerInParent="true"
+        android:src="@drawable/ic_luvia_forground"
+        android:contentDescription="@string/app_logo"
+        android:scaleType="fitCenter" />
+
+    <!-- Powered by cvaki text at bottom center -->
+    <TextView
+        android:id="@+id/tv_powered_by"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp"
+        android:text="Powered by cvaki"
+        android:textSize="18sp"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="0.08"
+        android:textStyle="bold" />
+
+</RelativeLayout>

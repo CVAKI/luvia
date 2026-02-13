@@ -4,14 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.cardview.widget.CardView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -23,18 +21,13 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
-    private TextView tvWelcome;
+    private TextView tvWelcome, tvSelectRole;
+    private CardView cardDoctor, cardPatient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
@@ -48,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize UI
         tvWelcome = findViewById(R.id.tv_welcome);
+        tvSelectRole = findViewById(R.id.tv_select_role);
+        cardDoctor = findViewById(R.id.card_doctor);
+        cardPatient = findViewById(R.id.card_patient);
 
         // Check if user is logged in
         FirebaseUser currentUser = mAuth.getCurrentUser();
@@ -59,12 +55,30 @@ public class MainActivity extends AppCompatActivity {
             // Display user info
             updateUI(currentUser);
         }
+
+        // Set up click listeners for role selection
+        cardDoctor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to Doctor Dashboard
+                Intent intent = new Intent(MainActivity.this, DoctorDashboardActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        cardPatient.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to Patient Dashboard
+                Intent intent = new Intent(MainActivity.this, PatientDashboardActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void updateUI(FirebaseUser user) {
         if (user != null) {
-            String welcomeText = "Welcome, " + user.getDisplayName() + "!\n" +
-                    "Email: " + user.getEmail();
+            String welcomeText = "Welcome, " + user.getDisplayName() + "!";
             tvWelcome.setText(welcomeText);
         }
     }
