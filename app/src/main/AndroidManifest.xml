@@ -48,6 +48,9 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
 
+        <activity android:name=".PatientRegistrationActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

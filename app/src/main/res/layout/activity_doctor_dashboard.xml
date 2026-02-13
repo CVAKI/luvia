@@ -44,13 +44,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:background="@drawable/gradient_doctor"
+                    android:background="@drawable/ic_luvia_forground"
                     android:padding="24dp">
 
                     <ImageView
                         android:layout_width="60dp"
                         android:layout_height="60dp"
-                        android:src="@drawable/ic_doctor"
+                        android:src="@drawable/ic_luvia_forground"
                         android:contentDescription="Doctor"
                         app:tint="#FFFFFF" />
 
@@ -113,7 +113,7 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/ic_calendar"
+                            android:src="@drawable/ic_luvia_forground"
                             app:tint="#4CAF50" />
 
                         <TextView
@@ -155,7 +155,7 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/ic_people"
+                            android:src="@drawable/ic_luvia_forground"
                             app:tint="#2196F3" />
 
                         <TextView
@@ -199,7 +199,7 @@
                     <ImageView
                         android:layout_width="80dp"
                         android:layout_height="80dp"
-                        android:src="@drawable/ic_construction"
+                        android:src="@drawable/ic_luvia_forground"
                         app:tint="#FF9800" />
 
                     <TextView

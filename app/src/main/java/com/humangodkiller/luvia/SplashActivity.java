@@ -18,13 +18,11 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+
 
 public class SplashActivity extends AppCompatActivity {
 
     private static final int SPLASH_DELAY = 3000; // 3 seconds
-    private FirebaseAuth mAuth;
 
     private ImageView ivLogo;
     private TextView tvPoweredBy;
@@ -33,9 +31,6 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-
-        // Initialize Firebase Auth
-        mAuth = FirebaseAuth.getInstance();
 
         // Initialize views
         ivLogo = findViewById(R.id.iv_logo);
@@ -134,17 +129,9 @@ public class SplashActivity extends AppCompatActivity {
         fadeOut.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                FirebaseUser currentUser = mAuth.getCurrentUser();
-
-                Intent intent;
-                if (currentUser != null) {
-                    // User is logged in, go to MainActivity
-                    intent = new Intent(SplashActivity.this, MainActivity.class);
-                } else {
-                    // User is not logged in, go to LoginActivity
-                    intent = new Intent(SplashActivity.this, LoginActivity.class);
-                }
-
+                // Always go to LoginActivity — it checks Firestore role and
+                // routes to the correct screen (role selection or dashboard)
+                Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
                 startActivity(intent);
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 finish();

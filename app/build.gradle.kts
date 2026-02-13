@@ -38,10 +38,11 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
 
-    // Firebase dependencies
+    // Firebase BoM — manages all Firebase library versions automatically
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
     implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-database")   // Realtime Database (live features)
+    implementation("com.google.firebase:firebase-firestore")  // Firestore (user profiles & roles)
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")

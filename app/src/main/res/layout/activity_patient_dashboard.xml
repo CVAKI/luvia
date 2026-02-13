@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,7 +8,9 @@
     android:background="#F5F5F5"
     tools:context=".PatientDashboardActivity">
 
+    <!-- ══════════════════ TOP BAR ══════════════════ -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
@@ -21,22 +24,114 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- ══════════════════ SCROLLABLE BODY ══════════════════ -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="56dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="16dp">
 
-            <!-- Welcome Card -->
+            <!-- ── Profile / Welcome Card ── -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@drawable/gradient_patient"
+                    android:padding="20dp"
+                    android:gravity="center_vertical">
+
+                    <!-- Avatar circle -->
+                    <LinearLayout
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:background="@drawable/circle_white_alpha"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_patient"
+                            android:contentDescription="Patient"
+                            app:tint="#FFFFFF" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="16dp">
+
+                        <TextView
+                            android:id="@+id/tv_patient_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Patient Name"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="#FFFFFF"
+                            tools:text="John Doe" />
+
+                        <TextView
+                            android:id="@+id/tv_patient_email"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="email@example.com"
+                            android:textSize="13sp"
+                            android:textColor="#E0E0E0"
+                            android:layout_marginTop="2dp"
+                            tools:text="john@gmail.com" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Patient"
+                            android:textSize="11sp"
+                            android:textColor="#FFFFFF"
+                            android:background="@drawable/badge_white_outline"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="8dp"
+                            android:paddingTop="2dp"
+                            android:paddingBottom="2dp"
+                            android:layout_marginTop="6dp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- ── Section Title: Health Details ── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Health Details"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#212121"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginStart="4dp" />
+
+            <!-- ── Health Details Card ── -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
                 app:cardUseCompatPadding="true">
 
@@ -44,63 +139,251 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:background="@drawable/gradient_patient"
-                    android:padding="24dp">
+                    android:padding="16dp">
 
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:src="@drawable/ic_patient"
-                        android:contentDescription="Patient"
-                        app:tint="#FFFFFF" />
-
-                    <TextView
-                        android:id="@+id/tv_patient_name"
-                        android:layout_width="wrap_content"
+                    <!-- Row 1: Age + Blood Group -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Patient Name"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="#FFFFFF"
-                        android:layout_marginTop="12dp" />
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        <!-- Age -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:background="@drawable/detail_tile_bg"
+                            android:padding="14dp"
+                            android:layout_marginEnd="6dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:src="@drawable/ic_calendar"
+                                app:tint="#9C27B0" />
+
+                            <TextView
+                                android:id="@+id/tv_age_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="—"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#212121"
+                                android:layout_marginTop="6dp"
+                                tools:text="24 yrs" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Age"
+                                android:textSize="12sp"
+                                android:textColor="#757575"
+                                android:layout_marginTop="2dp" />
+
+                        </LinearLayout>
+
+                        <!-- Blood Group -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:background="@drawable/detail_tile_bg"
+                            android:padding="14dp"
+                            android:layout_marginStart="6dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:src="@drawable/ic_blood"
+                                app:tint="#F44336" />
+
+                            <TextView
+                                android:id="@+id/tv_blood_group_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="—"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#212121"
+                                android:layout_marginTop="6dp"
+                                tools:text="O+" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Blood Group"
+                                android:textSize="12sp"
+                                android:textColor="#757575"
+                                android:layout_marginTop="2dp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Row 2: Height + Weight -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Welcome to your health dashboard"
-                        android:textSize="14sp"
-                        android:textColor="#E0E0E0"
-                        android:layout_marginTop="4dp" />
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <!-- Height -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:background="@drawable/detail_tile_bg"
+                            android:padding="14dp"
+                            android:layout_marginEnd="6dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:src="@drawable/ic_height"
+                                app:tint="#2196F3" />
+
+                            <TextView
+                                android:id="@+id/tv_height_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="—"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#212121"
+                                android:layout_marginTop="6dp"
+                                tools:text="170 cm" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Height"
+                                android:textSize="12sp"
+                                android:textColor="#757575"
+                                android:layout_marginTop="2dp" />
+
+                        </LinearLayout>
+
+                        <!-- Weight -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:background="@drawable/detail_tile_bg"
+                            android:padding="14dp"
+                            android:layout_marginStart="6dp"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:src="@drawable/ic_weight"
+                                app:tint="#FF9800" />
+
+                            <TextView
+                                android:id="@+id/tv_weight_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="—"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#212121"
+                                android:layout_marginTop="6dp"
+                                tools:text="65 kg" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Weight"
+                                android:textSize="12sp"
+                                android:textColor="#757575"
+                                android:layout_marginTop="2dp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Row 3: Phone (full width) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="@drawable/detail_tile_bg"
+                        android:padding="14dp"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_phone"
+                            app:tint="#4CAF50" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="14dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Phone Number"
+                                android:textSize="12sp"
+                                android:textColor="#757575" />
+
+                            <TextView
+                                android:id="@+id/tv_phone_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="—"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#212121"
+                                android:layout_marginTop="2dp"
+                                tools:text="+91 9876543210" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
 
-            <!-- Quick Access Title -->
+            <!-- ── Section Title: Overview ── -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Health Overview"
-                android:textSize="18sp"
+                android:textSize="17sp"
                 android:textStyle="bold"
                 android:textColor="#212121"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:layout_marginStart="4dp" />
 
-            <!-- Health Stats Grid -->
+            <!-- ── Stats Grid ── -->
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:columnCount="2"
-                android:rowCount="2">
+                android:columnCount="2">
 
-                <!-- Appointments Card -->
+                <!-- Appointments -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
-                    android:layout_height="120dp"
+                    android:layout_height="110dp"
                     android:layout_columnWeight="1"
-                    android:layout_margin="8dp"
-                    app:cardCornerRadius="12dp"
+                    android:layout_margin="6dp"
+                    app:cardCornerRadius="14dp"
                     app:cardElevation="4dp">
 
                     <LinearLayout
@@ -108,11 +391,11 @@
                         android:layout_height="match_parent"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:padding="16dp">
+                        android:padding="12dp">
 
                         <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
                             android:src="@drawable/ic_calendar"
                             app:tint="#9C27B0" />
 
@@ -120,29 +403,29 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textSize="24sp"
+                            android:textSize="22sp"
                             android:textStyle="bold"
                             android:textColor="#212121"
-                            android:layout_marginTop="8dp" />
+                            android:layout_marginTop="6dp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Appointments"
-                            android:textSize="12sp"
+                            android:textSize="11sp"
                             android:textColor="#757575" />
 
                     </LinearLayout>
 
                 </androidx.cardview.widget.CardView>
 
-                <!-- Medical Records Card -->
+                <!-- Medical Records -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
-                    android:layout_height="120dp"
+                    android:layout_height="110dp"
                     android:layout_columnWeight="1"
-                    android:layout_margin="8dp"
-                    app:cardCornerRadius="12dp"
+                    android:layout_margin="6dp"
+                    app:cardCornerRadius="14dp"
                     app:cardElevation="4dp">
 
                     <LinearLayout
@@ -150,11 +433,11 @@
                         android:layout_height="match_parent"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:padding="16dp">
+                        android:padding="12dp">
 
                         <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
                             android:src="@drawable/ic_medical_records"
                             app:tint="#00BCD4" />
 
@@ -162,16 +445,16 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textSize="24sp"
+                            android:textSize="22sp"
                             android:textStyle="bold"
                             android:textColor="#212121"
-                            android:layout_marginTop="8dp" />
+                            android:layout_marginTop="6dp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Records"
-                            android:textSize="12sp"
+                            android:textSize="11sp"
                             android:textColor="#757575" />
 
                     </LinearLayout>
@@ -180,52 +463,25 @@
 
             </GridLayout>
 
-            <!-- Coming Soon Message -->
-            <androidx.cardview.widget.CardView
+            <!-- Bottom padding so content doesn't hide behind nav bar -->
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                app:cardUseCompatPadding="true">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="24dp"
-                    android:gravity="center">
-
-                    <ImageView
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:src="@drawable/ic_construction"
-                        app:tint="#FF9800" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="More Features Coming Soon!"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="#212121"
-                        android:layout_marginTop="16dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Health tracking and medical records will be available here"
-                        android:textSize="14sp"
-                        android:textColor="#757575"
-                        android:textAlignment="center"
-                        android:layout_marginTop="8dp" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
+                android:layout_height="16dp" />
 
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+    <!-- ══════════════════ BOTTOM NAVIGATION ══════════════════ -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:background="#FFFFFF"
+        app:menu="@menu/menu_patient_bottom_nav"
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@drawable/selector_bottom_nav"
+        app:itemTextColor="@drawable/selector_bottom_nav" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
