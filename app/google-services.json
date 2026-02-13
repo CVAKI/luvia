@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "559141417134",
+    "firebase_url": "https://luvia-cva-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "luvia-cva",
+    "storage_bucket": "luvia-cva.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:559141417134:android:0c30161da4524d06aa3d3f",
+        "android_client_info": {
+          "package_name": "com.humangodkiller.luvia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "559141417134-j41mj9kl6cods5kke9ci9akoout88irh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.humangodkiller.luvia",
+            "certificate_hash": "f83302e1720d50d1c185950db083c1b438af3049"
+          }
+        },
+        {
+          "client_id": "559141417134-r8khb910pigjjhslfm4br19qks2c2mn0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbpjmOLFLJTEq5caMEfUSjJQUopeX6NS8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "559141417134-r8khb910pigjjhslfm4br19qks2c2mn0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
