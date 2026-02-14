@@ -70,7 +70,7 @@
         <activity
             android:name=".GeminiIntegrationActivity"
             android:label="Medicine Reminder"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:theme="@style/Theme.Luvia.Translucent"
             android:exported="false"
             android:launchMode="singleTask"
             android:excludeFromRecents="true" />

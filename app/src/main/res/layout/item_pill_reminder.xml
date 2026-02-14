@@ -97,6 +97,31 @@
 
         </LinearLayout>
 
+        <!-- NEW: Date range row -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📅 "
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tv_date_range"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="#2196F3"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+
         <!-- Delete Button -->
         <ImageButton
             android:id="@+id/btn_delete"

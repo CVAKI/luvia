@@ -1,6 +1,7 @@
 package com.humangodkiller.luvia;
 
 import android.app.AlarmManager;
+import android.app.DatePickerDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -41,7 +42,13 @@ import java.util.Locale;
 public class PatientPlansActivity extends AppCompatActivity {
 
     private static final String TAG = "PatientPlansActivity";
+
+    // Standard early reminder window (10 minutes before alarm)
     private static final int REMINDER_MINUTES_BEFORE = 10;
+
+    // If the gap between now and alarm is less than this, use a short reminder instead
+    // The early reminder will fire after REMINDER_SHORT_DELAY_MINUTES from now
+    private static final int REMINDER_SHORT_DELAY_MINUTES = 2;
 
     private RecyclerView recyclerView;
     private FloatingActionButton fabAddReminder;
@@ -57,7 +64,6 @@ public class PatientPlansActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_patient_plans);
 
-        // ── Toolbar ────────────────────────────────────────────────────────
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -65,10 +71,8 @@ public class PatientPlansActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("My Medicine Plans");
         }
 
-        // ── Firebase ───────────────────────────────────────────────────────
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
-
         if (currentUser == null) {
             Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
             finish();
@@ -76,43 +80,33 @@ public class PatientPlansActivity extends AppCompatActivity {
         }
 
         FirebaseDatabase database = FirebaseDatabase.getInstance(
-                "https://luvia-cva-default-rtdb.asia-southeast1.firebasedatabase.app"
-        );
+                "https://luvia-cva-default-rtdb.asia-southeast1.firebasedatabase.app");
         remindersRef = database.getReference("pillReminders").child(currentUser.getUid());
 
-        // ── Initialize views ───────────────────────────────────────────────
-        recyclerView = findViewById(R.id.recycler_reminders);
+        recyclerView   = findViewById(R.id.recycler_reminders);
         fabAddReminder = findViewById(R.id.fab_add_reminder);
-
-        reminderList = new ArrayList<>();
-        adapter = new PillReminderAdapter(reminderList);
+        reminderList   = new ArrayList<>();
+        adapter        = new PillReminderAdapter(reminderList);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        // ── Add reminder button ────────────────────────────────────────────
         fabAddReminder.setOnClickListener(v -> showAddReminderDialog());
-
-        // ── Load reminders ─────────────────────────────────────────────────
         loadReminders();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (remindersRef != null && remindersListener != null) {
+        if (remindersRef != null && remindersListener != null)
             remindersRef.removeEventListener(remindersListener);
-        }
     }
 
     @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
+    public boolean onSupportNavigateUp() { onBackPressed(); return true; }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Load Reminders from Firebase
+    // Load Reminders
     // ═══════════════════════════════════════════════════════════════════════
 
     private void loadReminders() {
@@ -129,7 +123,6 @@ public class PatientPlansActivity extends AppCompatActivity {
                 }
                 adapter.notifyDataSetChanged();
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e(TAG, "Failed to load reminders", error.toException());
@@ -141,36 +134,70 @@ public class PatientPlansActivity extends AppCompatActivity {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Add Reminder Dialog
+    // Add Reminder Dialog — with Start Date & End Date
     // ═══════════════════════════════════════════════════════════════════════
 
     private void showAddReminderDialog() {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_reminder, null);
 
-        EditText etPillName = dialogView.findViewById(R.id.et_pill_name);
-        EditText etDosage = dialogView.findViewById(R.id.et_dosage);
-        Button btnSelectTime = dialogView.findViewById(R.id.btn_select_time);
+        EditText etPillName     = dialogView.findViewById(R.id.et_pill_name);
+        EditText etDosage       = dialogView.findViewById(R.id.et_dosage);
+        Button btnSelectTime    = dialogView.findViewById(R.id.btn_select_time);
         TextView tvSelectedTime = dialogView.findViewById(R.id.tv_selected_time);
+        Button btnStartDate     = dialogView.findViewById(R.id.btn_start_date);
+        Button btnEndDate       = dialogView.findViewById(R.id.btn_end_date);
+        TextView tvStartDate    = dialogView.findViewById(R.id.tv_start_date);
+        TextView tvEndDate      = dialogView.findViewById(R.id.tv_end_date);
 
-        final Calendar selectedTime = Calendar.getInstance();
+        final Calendar selectedTime  = Calendar.getInstance();
+        final Calendar startDateCal  = Calendar.getInstance();
+        final Calendar endDateCal    = Calendar.getInstance();
+        final boolean[] timeSelected  = {false};
+        final boolean[] startSelected = {false};
+        final boolean[] endSelected   = {false};
 
-        btnSelectTime.setOnClickListener(v -> {
-            TimePickerDialog timePicker = new TimePickerDialog(
-                    this,
-                    (view, hourOfDay, minute) -> {
-                        selectedTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                        selectedTime.set(Calendar.MINUTE, minute);
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
 
-                        String timeStr = String.format(Locale.getDefault(),
-                                "%02d:%02d", hourOfDay, minute);
-                        tvSelectedTime.setText(timeStr);
-                        tvSelectedTime.setVisibility(View.VISIBLE);
+        btnSelectTime.setOnClickListener(v -> new TimePickerDialog(this,
+                (view, h, m) -> {
+                    selectedTime.set(Calendar.HOUR_OF_DAY, h);
+                    selectedTime.set(Calendar.MINUTE, m);
+                    selectedTime.set(Calendar.SECOND, 0);
+                    tvSelectedTime.setText(String.format(Locale.getDefault(), "%02d:%02d", h, m));
+                    tvSelectedTime.setVisibility(View.VISIBLE);
+                    timeSelected[0] = true;
+                },
+                selectedTime.get(Calendar.HOUR_OF_DAY),
+                selectedTime.get(Calendar.MINUTE), false).show());
+
+        btnStartDate.setOnClickListener(v -> {
+            DatePickerDialog dp = new DatePickerDialog(this,
+                    (view, y, mo, d) -> {
+                        startDateCal.set(y, mo, d);
+                        tvStartDate.setText(dateFormat.format(startDateCal.getTime()));
+                        tvStartDate.setVisibility(View.VISIBLE);
+                        startSelected[0] = true;
                     },
-                    selectedTime.get(Calendar.HOUR_OF_DAY),
-                    selectedTime.get(Calendar.MINUTE),
-                    false
-            );
-            timePicker.show();
+                    startDateCal.get(Calendar.YEAR),
+                    startDateCal.get(Calendar.MONTH),
+                    startDateCal.get(Calendar.DAY_OF_MONTH));
+            dp.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+            dp.show();
+        });
+
+        btnEndDate.setOnClickListener(v -> {
+            DatePickerDialog dp = new DatePickerDialog(this,
+                    (view, y, mo, d) -> {
+                        endDateCal.set(y, mo, d);
+                        tvEndDate.setText(dateFormat.format(endDateCal.getTime()));
+                        tvEndDate.setVisibility(View.VISIBLE);
+                        endSelected[0] = true;
+                    },
+                    endDateCal.get(Calendar.YEAR),
+                    endDateCal.get(Calendar.MONTH),
+                    endDateCal.get(Calendar.DAY_OF_MONTH));
+            dp.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+            dp.show();
         });
 
         new AlertDialog.Builder(this)
@@ -178,105 +205,158 @@ public class PatientPlansActivity extends AppCompatActivity {
                 .setView(dialogView)
                 .setPositiveButton("Add", (dialog, which) -> {
                     String pillName = etPillName.getText().toString().trim();
-                    String dosage = etDosage.getText().toString().trim();
+                    String dosage   = etDosage.getText().toString().trim();
 
                     if (pillName.isEmpty()) {
-                        Toast.makeText(this, "Please enter medicine name",
-                                Toast.LENGTH_SHORT).show();
-                        return;
+                        Toast.makeText(this, "Please enter medicine name", Toast.LENGTH_SHORT).show(); return;
+                    }
+                    if (!timeSelected[0]) {
+                        Toast.makeText(this, "Please select a time", Toast.LENGTH_SHORT).show(); return;
+                    }
+                    if (!startSelected[0]) {
+                        Toast.makeText(this, "Please select a start date", Toast.LENGTH_SHORT).show(); return;
+                    }
+                    if (!endSelected[0]) {
+                        Toast.makeText(this, "Please select an end date", Toast.LENGTH_SHORT).show(); return;
+                    }
+                    if (endDateCal.before(startDateCal)) {
+                        Toast.makeText(this, "End date must be after start date", Toast.LENGTH_SHORT).show(); return;
                     }
 
-                    if (tvSelectedTime.getVisibility() != View.VISIBLE) {
-                        Toast.makeText(this, "Please select a time",
-                                Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+                    Calendar alarmCal = (Calendar) startDateCal.clone();
+                    alarmCal.set(Calendar.HOUR_OF_DAY, selectedTime.get(Calendar.HOUR_OF_DAY));
+                    alarmCal.set(Calendar.MINUTE,      selectedTime.get(Calendar.MINUTE));
+                    alarmCal.set(Calendar.SECOND,      0);
+                    alarmCal.set(Calendar.MILLISECOND, 0);
+                    if (alarmCal.before(Calendar.getInstance()))
+                        alarmCal.add(Calendar.DAY_OF_MONTH, 1);
 
-                    PillReminder reminder = new PillReminder(
-                            pillName,
-                            dosage.isEmpty() ? "As prescribed" : dosage,
-                            selectedTime.getTimeInMillis(),
-                            true
-                    );
+                    endDateCal.set(Calendar.HOUR_OF_DAY, 23);
+                    endDateCal.set(Calendar.MINUTE,      59);
+                    endDateCal.set(Calendar.SECOND,      59);
 
-                    saveReminder(reminder);
+                    saveReminder(new PillReminder(pillName, dosage,
+                            alarmCal.getTimeInMillis(),
+                            startDateCal.getTimeInMillis(),
+                            endDateCal.getTimeInMillis(), true));
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Save Reminder to Firebase
+    // Save to Firebase
     // ═══════════════════════════════════════════════════════════════════════
 
     private void saveReminder(PillReminder reminder) {
         String key = remindersRef.push().getKey();
-        if (key == null) {
-            Toast.makeText(this, "Failed to create reminder", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+        if (key == null) return;
         reminder.setId(key);
         remindersRef.child(key).setValue(reminder)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Reminder added successfully",
-                            Toast.LENGTH_SHORT).show();
-
-                    // Schedule alarms
-                    scheduleAlarm(reminder, false);  // Main alarm
-                    scheduleAlarm(reminder, true);   // 10-min early alarm
+                    Toast.makeText(this, "Reminder added!", Toast.LENGTH_SHORT).show();
+                    scheduleMainAlarm(reminder);
+                    scheduleSmartEarlyAlarm(reminder);
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Failed to save reminder", e);
-                    Toast.makeText(this, "Failed to save reminder",
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Failed to save reminder", Toast.LENGTH_SHORT).show();
                 });
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Schedule Alarms
+    // Schedule Main Alarm (at the exact pill time)
     // ═══════════════════════════════════════════════════════════════════════
 
-    private void scheduleAlarm(PillReminder reminder, boolean isEarlyReminder) {
+    private void scheduleMainAlarm(PillReminder reminder) {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         if (alarmManager == null) return;
 
-        Intent intent = new Intent(this, PillAlarmReceiver.class);
-        intent.putExtra("pill_name", reminder.getPillName());
-        intent.putExtra("dosage", reminder.getDosage());
-        intent.putExtra("reminder_id", reminder.getId());
-        intent.putExtra("is_early_reminder", isEarlyReminder);
+        if (reminder.getEndDate() > 0 && System.currentTimeMillis() > reminder.getEndDate()) {
+            Log.d(TAG, "Skipping main alarm — end date passed for " + reminder.getPillName());
+            return;
+        }
 
-        int requestCode = reminder.getId().hashCode() + (isEarlyReminder ? 1000 : 0);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                this,
-                requestCode,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
+        Intent intent = new Intent(this, PillAlarmReceiver.class);
+        intent.putExtra("pill_name",         reminder.getPillName());
+        intent.putExtra("dosage",            reminder.getDosage());
+        intent.putExtra("reminder_id",       reminder.getId());
+        intent.putExtra("is_early_reminder", false);
+        intent.putExtra("minutes_remaining", 0); // main alarm — take now
+        intent.putExtra("end_date",          reminder.getEndDate());
+
+        int requestCode = reminder.getId().hashCode();
+        PendingIntent pi = PendingIntent.getBroadcast(this, requestCode, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         long alarmTime = reminder.getScheduledTime();
-        if (isEarlyReminder) {
-            alarmTime -= (REMINDER_MINUTES_BEFORE * 60 * 1000); // 10 minutes earlier
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmTime, pi);
+        else
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime, pi);
+
+        Log.d(TAG, "Main alarm scheduled for " + reminder.getPillName());
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Smart Early Alarm — uses actual gap, not always 10 minutes
+    //
+    //  GAP >= 10 min  → early reminder fires 10 min before (standard)
+    //  GAP < 10 min   → early reminder fires 2 min from now
+    //                   and tells the patient the EXACT remaining minutes
+    // ═══════════════════════════════════════════════════════════════════════
+
+    private void scheduleSmartEarlyAlarm(PillReminder reminder) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager == null) return;
+
+        if (reminder.getEndDate() > 0 && System.currentTimeMillis() > reminder.getEndDate()) {
+            Log.d(TAG, "Skipping early alarm — end date passed for " + reminder.getPillName());
+            return;
         }
 
-        // Schedule exact alarm
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    alarmTime,
-                    pendingIntent
-            );
+        long now           = System.currentTimeMillis();
+        long alarmTime     = reminder.getScheduledTime();
+        long gapMillis     = alarmTime - now;
+        long gapMinutes    = gapMillis / (60 * 1000L);
+
+        long earlyAlarmTime;
+        int  minutesRemaining;
+
+        if (gapMinutes >= REMINDER_MINUTES_BEFORE) {
+            // Normal case: fire early reminder 10 min before
+            earlyAlarmTime    = alarmTime - (REMINDER_MINUTES_BEFORE * 60 * 1000L);
+            minutesRemaining  = REMINDER_MINUTES_BEFORE;
+            Log.d(TAG, "Early alarm: standard 10-min-before for " + reminder.getPillName());
+        } else if (gapMinutes > REMINDER_SHORT_DELAY_MINUTES) {
+            // Short gap: fire 2 minutes from now, tell patient exact gap
+            earlyAlarmTime    = now + (REMINDER_SHORT_DELAY_MINUTES * 60 * 1000L);
+            minutesRemaining  = (int) gapMinutes; // e.g. 5 if alarm is 5 min away
+            Log.d(TAG, "Early alarm: short gap (" + gapMinutes + " min) for " + reminder.getPillName()
+                    + " — reminding in 2 min, saying '" + minutesRemaining + " min remaining'");
         } else {
-            alarmManager.setExact(
-                    AlarmManager.RTC_WAKEUP,
-                    alarmTime,
-                    pendingIntent
-            );
+            // Gap is too short (2 min or less) — skip early reminder entirely
+            Log.d(TAG, "Skipping early alarm — gap too short (" + gapMinutes + " min) for " + reminder.getPillName());
+            return;
         }
 
-        Log.d(TAG, "Alarm scheduled for " + reminder.getPillName() +
-                (isEarlyReminder ? " (10 min early)" : " (main)"));
+        Intent intent = new Intent(this, PillAlarmReceiver.class);
+        intent.putExtra("pill_name",         reminder.getPillName());
+        intent.putExtra("dosage",            reminder.getDosage());
+        intent.putExtra("reminder_id",       reminder.getId());
+        intent.putExtra("is_early_reminder", true);
+        intent.putExtra("minutes_remaining", minutesRemaining); // ← actual minutes, not always 10
+        intent.putExtra("end_date",          reminder.getEndDate());
+
+        int requestCode = reminder.getId().hashCode() + 1000;
+        PendingIntent pi = PendingIntent.getBroadcast(this, requestCode, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, earlyAlarmTime, pi);
+        else
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, earlyAlarmTime, pi);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -286,95 +366,82 @@ public class PatientPlansActivity extends AppCompatActivity {
     private void deleteReminder(PillReminder reminder) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Reminder")
-                .setMessage("Are you sure you want to delete this reminder for " +
-                        reminder.getPillName() + "?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    remindersRef.child(reminder.getId()).removeValue()
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(this, "Reminder deleted", Toast.LENGTH_SHORT).show();
-                                cancelAlarm(reminder, false);
-                                cancelAlarm(reminder, true);
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e(TAG, "Failed to delete reminder", e);
-                                Toast.makeText(this, "Failed to delete reminder",
-                                        Toast.LENGTH_SHORT).show();
-                            });
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+                .setMessage("Delete reminder for " + reminder.getPillName() + "?")
+                .setPositiveButton("Delete", (dialog, which) ->
+                        remindersRef.child(reminder.getId()).removeValue()
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "Reminder deleted", Toast.LENGTH_SHORT).show();
+                                    cancelAlarm(reminder, false);
+                                    cancelAlarm(reminder, true);
+                                })
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(this, "Failed to delete", Toast.LENGTH_SHORT).show()))
+                .setNegativeButton("Cancel", null).show();
     }
 
     private void cancelAlarm(PillReminder reminder, boolean isEarlyReminder) {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         if (alarmManager == null) return;
-
-        Intent intent = new Intent(this, PillAlarmReceiver.class);
         int requestCode = reminder.getId().hashCode() + (isEarlyReminder ? 1000 : 0);
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                this,
-                requestCode,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-
-        alarmManager.cancel(pendingIntent);
+        PendingIntent pi = PendingIntent.getBroadcast(this, requestCode,
+                new Intent(this, PillAlarmReceiver.class),
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        alarmManager.cancel(pi);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // RecyclerView Adapter
+    // Adapter — shows date range
     // ═══════════════════════════════════════════════════════════════════════
 
     private class PillReminderAdapter extends RecyclerView.Adapter<PillReminderAdapter.ViewHolder> {
-
         private final List<PillReminder> reminders;
         private final SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+        private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
 
-        public PillReminderAdapter(List<PillReminder> reminders) {
-            this.reminders = reminders;
-        }
+        public PillReminderAdapter(List<PillReminder> reminders) { this.reminders = reminders; }
 
-        @NonNull
-        @Override
+        @NonNull @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
+            View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_pill_reminder, parent, false);
-            return new ViewHolder(view);
+            return new ViewHolder(v);
         }
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            PillReminder reminder = reminders.get(position);
+            PillReminder r = reminders.get(position);
+            holder.tvPillName.setText(r.getPillName());
+            holder.tvDosage.setText("Dosage: " + r.getDosage());
+            holder.tvTime.setText("Time: " + timeFormat.format(r.getScheduledTime()));
 
-            holder.tvPillName.setText(reminder.getPillName());
-            holder.tvDosage.setText(reminder.getDosage());
-            holder.tvTime.setText(timeFormat.format(reminder.getScheduledTime()));
-
-            holder.btnDelete.setOnClickListener(v -> deleteReminder(reminder));
+            if (r.getStartDate() > 0 && r.getEndDate() > 0) {
+                holder.tvDateRange.setText(
+                        dateFormat.format(r.getStartDate()) + "  →  " + dateFormat.format(r.getEndDate()));
+                holder.tvDateRange.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvDateRange.setVisibility(View.GONE);
+            }
+            holder.btnDelete.setOnClickListener(v -> deleteReminder(r));
         }
 
-        @Override
-        public int getItemCount() {
-            return reminders.size();
-        }
+        @Override public int getItemCount() { return reminders.size(); }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-            TextView tvPillName, tvDosage, tvTime;
+            TextView tvPillName, tvDosage, tvTime, tvDateRange;
             ImageButton btnDelete;
-
-            ViewHolder(View itemView) {
-                super(itemView);
-                tvPillName = itemView.findViewById(R.id.tv_pill_name);
-                tvDosage = itemView.findViewById(R.id.tv_dosage);
-                tvTime = itemView.findViewById(R.id.tv_time);
-                btnDelete = itemView.findViewById(R.id.btn_delete);
+            ViewHolder(View v) {
+                super(v);
+                tvPillName  = v.findViewById(R.id.tv_pill_name);
+                tvDosage    = v.findViewById(R.id.tv_dosage);
+                tvTime      = v.findViewById(R.id.tv_time);
+                tvDateRange = v.findViewById(R.id.tv_date_range);
+                btnDelete   = v.findViewById(R.id.btn_delete);
             }
         }
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Data Model
+    // Data Model — added startDate & endDate
     // ═══════════════════════════════════════════════════════════════════════
 
     public static class PillReminder {
@@ -382,33 +449,35 @@ public class PatientPlansActivity extends AppCompatActivity {
         private String pillName;
         private String dosage;
         private long scheduledTime;
+        private long startDate;
+        private long endDate;
         private boolean enabled;
 
-        public PillReminder() {
-            // Required for Firebase
-        }
+        public PillReminder() {}
 
-        public PillReminder(String pillName, String dosage, long scheduledTime, boolean enabled) {
-            this.pillName = pillName;
-            this.dosage = dosage;
+        public PillReminder(String pillName, String dosage, long scheduledTime,
+                            long startDate, long endDate, boolean enabled) {
+            this.pillName      = pillName;
+            this.dosage        = dosage;
             this.scheduledTime = scheduledTime;
-            this.enabled = enabled;
+            this.startDate     = startDate;
+            this.endDate       = endDate;
+            this.enabled       = enabled;
         }
 
-        // Getters and setters
-        public String getId() { return id; }
-        public void setId(String id) { this.id = id; }
-
-        public String getPillName() { return pillName; }
-        public void setPillName(String pillName) { this.pillName = pillName; }
-
-        public String getDosage() { return dosage; }
-        public void setDosage(String dosage) { this.dosage = dosage; }
-
-        public long getScheduledTime() { return scheduledTime; }
-        public void setScheduledTime(long scheduledTime) { this.scheduledTime = scheduledTime; }
-
-        public boolean isEnabled() { return enabled; }
-        public void setEnabled(boolean enabled) { this.enabled = enabled; }
+        public String getId()                    { return id; }
+        public void setId(String id)             { this.id = id; }
+        public String getPillName()              { return pillName; }
+        public void setPillName(String p)        { this.pillName = p; }
+        public String getDosage()                { return dosage; }
+        public void setDosage(String d)          { this.dosage = d; }
+        public long getScheduledTime()           { return scheduledTime; }
+        public void setScheduledTime(long t)     { this.scheduledTime = t; }
+        public long getStartDate()               { return startDate; }
+        public void setStartDate(long startDate) { this.startDate = startDate; }
+        public long getEndDate()                 { return endDate; }
+        public void setEndDate(long endDate)     { this.endDate = endDate; }
+        public boolean isEnabled()               { return enabled; }
+        public void setEnabled(boolean enabled)  { this.enabled = enabled; }
     }
 }

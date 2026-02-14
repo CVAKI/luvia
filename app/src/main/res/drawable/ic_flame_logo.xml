@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Flame monogram / logo mark
+     Outer flame: accent_orange  |  Inner core: accent_yellow -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+
+    <!-- Outer flame body — orange -->
+    <path
+        android:fillColor="#FD6B26"
+        android:pathData="M32,4
+                          C32,4 50,22 50,36
+                          C50,46.49 41.94,55 32,55
+                          C22.06,55 14,46.49 14,36
+                          C14,28 19,21 19,21
+                          C19,21 21,33 28,33
+                          C28,33 23,23 32,4Z" />
+
+    <!-- Inner flame core — yellow -->
+    <path
+        android:fillColor="#FDD92D"
+        android:pathData="M32,18
+                          C32,18 40,28 40,36
+                          C40,40.42 36.42,44 32,44
+                          C27.58,44 24,40.42 24,36
+                          C24,31 27,28 27,28
+                          C27,28 28.5,34 32,34
+                          C32,34 29,28 32,18Z" />
+
+</vector>

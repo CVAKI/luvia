@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Horizontal fire gradient used for accent lines and the brand divider -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="#D42221"
+        android:centerColor="#FD6B26"
+        android:endColor="#FDD92D"
+        android:angle="0"
+        android:type="linear" />
+    <corners android:radius="2dp" />
+</shape>

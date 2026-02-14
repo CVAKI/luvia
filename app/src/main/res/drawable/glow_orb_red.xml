@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Radial red glow — top ambient orb -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:startColor="#CCD42221"
+        android:endColor="#00D42221"
+        android:gradientRadius="50%p"
+        android:type="radial" />
+</shape>

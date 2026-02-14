@@ -1,13 +1,19 @@
 package com.humangodkiller.luvia;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -20,97 +26,211 @@ public class PatientDashboardActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
-    // Profile views
     private TextView tvPatientName, tvPatientEmail;
-
-    // Detail tile views
     private TextView tvAgeValue, tvBloodGroupValue;
     private TextView tvHeightValue, tvWeightValue, tvPhoneValue;
+    private TextView tvLanguage;
 
-    // Bottom nav
+    private CardView cardProfile, cardHealth, cardSettings, cardAppointments, cardRecords;
     private BottomNavigationView bottomNavigationView;
+
+    private static final String[] LANGUAGE_LABELS = {"English", "Malayalam", "Hindi"};
+    private static final String[] LANGUAGE_CODES  = {"en", "ml", "hi"};
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Lifecycle
+    // ─────────────────────────────────────────────────────────────────────────
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_patient_dashboard);
 
-        // ── Toolbar ──────────────────────────────────────────────
+        setupToolbar();
+        bindViews();
+        setupClickListeners();
+        setupBottomNavigation();
+        checkAuthAndLoad();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Setup helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-            getSupportActionBar().setTitle("Patient Dashboard");
+            getSupportActionBar().setTitle("My Dashboard");
         }
+    }
 
-        // ── Firebase ─────────────────────────────────────────────
+    private void bindViews() {
         mAuth = FirebaseAuth.getInstance();
         db    = FirebaseFirestore.getInstance();
 
-        // ── Bind views ───────────────────────────────────────────
-        tvPatientName   = findViewById(R.id.tv_patient_name);
-        tvPatientEmail  = findViewById(R.id.tv_patient_email);
-        tvAgeValue      = findViewById(R.id.tv_age_value);
+        tvPatientName     = findViewById(R.id.tv_patient_name);
+        tvPatientEmail    = findViewById(R.id.tv_patient_email);
+        tvAgeValue        = findViewById(R.id.tv_age_value);
         tvBloodGroupValue = findViewById(R.id.tv_blood_group_value);
-        tvHeightValue   = findViewById(R.id.tv_height_value);
-        tvWeightValue   = findViewById(R.id.tv_weight_value);
-        tvPhoneValue    = findViewById(R.id.tv_phone_value);
+        tvHeightValue     = findViewById(R.id.tv_height_value);
+        tvWeightValue     = findViewById(R.id.tv_weight_value);
+        tvPhoneValue      = findViewById(R.id.tv_phone_value);
+        tvLanguage        = findViewById(R.id.tv_language_value);
 
-        // ── Bottom Navigation ─────────────────────────────────────
+        cardProfile      = findViewById(R.id.card_profile);
+        cardHealth       = findViewById(R.id.card_health);
+        cardSettings     = findViewById(R.id.card_settings);
+        cardAppointments = findViewById(R.id.card_appointments);
+        cardRecords      = findViewById(R.id.card_records);
         bottomNavigationView = findViewById(R.id.bottom_navigation);
-        setupBottomNavigation();
 
-        // ── Load data ─────────────────────────────────────────────
+        // Pre-hide cards for staggered entrance
+        View[] cards = {cardProfile, cardHealth, cardSettings, cardAppointments, cardRecords};
+        for (View card : cards) {
+            card.setAlpha(0f);
+            card.setTranslationY(60f);
+        }
+    }
+
+    private void setupClickListeners() {
+        // Language picker
+        findViewById(R.id.layout_language_setting).setOnClickListener(v -> {
+            animatePulse(v);
+            showLanguagePicker();
+        });
+
+        // Logout button
+        findViewById(R.id.layout_logout).setOnClickListener(v -> {
+            animatePulse(v);
+            showLogoutConfirmDialog();
+        });
+    }
+
+    private void checkAuthAndLoad() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             loadPatientData(currentUser);
         } else {
-            // Session expired — back to login
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // Entrance Animations
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void runEntranceAnimations() {
+        View[] cards = {cardProfile, cardHealth, cardSettings, cardAppointments, cardRecords};
+        long baseDelay = 80L;
+
+        for (int i = 0; i < cards.length; i++) {
+            View card = cards[i];
+            long delay = i * baseDelay + 100L;
+
+            ObjectAnimator fadeIn   = ObjectAnimator.ofFloat(card, "alpha", 0f, 1f);
+            ObjectAnimator slideUp  = ObjectAnimator.ofFloat(card, "translationY", 60f, 0f);
+
+            fadeIn.setDuration(400);
+            slideUp.setDuration(450);
+            fadeIn.setStartDelay(delay);
+            slideUp.setStartDelay(delay);
+            slideUp.setInterpolator(new AccelerateDecelerateInterpolator());
+
+            AnimatorSet set = new AnimatorSet();
+            set.playTogether(fadeIn, slideUp);
+            set.start();
+        }
+    }
+
+    /** Subtle bounce-scale pulse on click */
+    private void animatePulse(View view) {
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0.96f, 1f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(view, "scaleY", 1f, 0.96f, 1f);
+        scaleX.setDuration(200);
+        scaleY.setDuration(200);
+        scaleX.setInterpolator(new OvershootInterpolator(4f));
+        scaleY.setInterpolator(new OvershootInterpolator(4f));
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(scaleX, scaleY);
+        set.start();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Language Picker
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void showLanguagePicker() {
+        new AlertDialog.Builder(this)
+                .setTitle("Alarm Language / ഭാഷ / भाषा")
+                .setItems(LANGUAGE_LABELS, (dialog, which) ->
+                        saveLanguageToFirestore(LANGUAGE_CODES[which], LANGUAGE_LABELS[which]))
+                .show();
+    }
+
+    private void saveLanguageToFirestore(String code, String label) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) return;
+        db.collection("users").document(user.getUid())
+                .update("alarmLanguage", code)
+                .addOnSuccessListener(unused -> {
+                    tvLanguage.setText(label);
+                    Toast.makeText(this, "Alarm language: " + label, Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to save language", Toast.LENGTH_SHORT).show());
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Logout
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void showLogoutConfirmDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Sign Out")
+                .setMessage("Are you sure you want to log out of your account?")
+                .setPositiveButton("Sign Out", (dialog, which) -> performLogout())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void performLogout() {
+        // Fade out animation before logging out
+        View root = findViewById(android.R.id.content);
+        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(root, "alpha", 1f, 0f);
+        fadeOut.setDuration(300);
+        fadeOut.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                mAuth.signOut();
+                Intent intent = new Intent(PatientDashboardActivity.this, LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                finish();
+            }
+        });
+        fadeOut.start();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // Bottom Navigation
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
 
     private void setupBottomNavigation() {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
-            if (id == R.id.nav_home) {
-                // Already here — nothing to do
-                return true;
-
-            } else if (id == R.id.nav_plans) {
-                // Navigate to Medicine Plans Activity
-                Intent intent = new Intent(PatientDashboardActivity.this, PatientPlansActivity.class);
-                startActivity(intent);
-                return true;
-
-            } else if (id == R.id.nav_sos) {
-                showComingSoon(
-                        "SOS 🚨",
-                        "One-tap emergency alerts will be available soon.\nWe're working hard on it!"
-                );
-                return true;
-
-            } else if (id == R.id.nav_message) {
-                showComingSoon(
-                        "Messages 💬",
-                        "Direct chat with your doctor is coming soon.\nHang tight!"
-                );
-                return true;
-
-            } else if (id == R.id.nav_map) {
-                showComingSoon(
-                        "Map 📍",
-                        "Find nearby hospitals and clinics — coming soon!\nWe're mapping it out."
-                );
+            if (id == R.id.nav_home)    { return true; }
+            if (id == R.id.nav_plans)   {
+                startActivity(new Intent(this, PatientPlansActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 return true;
             }
-
+            if (id == R.id.nav_sos)     { showComingSoon("🚨 SOS", "Emergency alerts coming soon!"); return true; }
+            if (id == R.id.nav_message) { showComingSoon("💬 Messages", "Doctor chat coming soon!"); return true; }
+            if (id == R.id.nav_map)     { showComingSoon("📍 Map", "Nearby clinics — coming soon!"); return true; }
             return false;
         });
     }
@@ -121,72 +241,71 @@ public class PatientDashboardActivity extends AppCompatActivity {
                 .setMessage(message)
                 .setPositiveButton("Got it!", null)
                 .show();
-
-        // Reset selection back to Home after dialog shown
         bottomNavigationView.post(() ->
                 bottomNavigationView.setSelectedItemId(R.id.nav_home));
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Load patient data from Firestore
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // Load data + language
+    // ─────────────────────────────────────────────────────────────────────────
 
     private void loadPatientData(FirebaseUser user) {
-        // Show Google account info immediately while Firestore loads
-        String displayName = user.getDisplayName();
-        String email       = user.getEmail();
-
-        tvPatientName.setText(displayName != null ? displayName : "Patient");
-        tvPatientEmail.setText(email != null ? email : "");
+        tvPatientName.setText(user.getDisplayName() != null ? user.getDisplayName() : "Patient");
+        tvPatientEmail.setText(user.getEmail() != null ? user.getEmail() : "");
 
         db.collection("users").document(user.getUid()).get()
                 .addOnSuccessListener(doc -> {
                     if (doc.exists()) {
                         populateDetails(doc);
+                        loadLanguageSetting(doc);
                     }
+                    // Run entrance animations after data is ready
+                    runEntranceAnimations();
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this,
-                                "Could not load profile data.",
-                                Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Could not load profile.", Toast.LENGTH_SHORT).show();
+                    runEntranceAnimations();
+                });
     }
 
     private void populateDetails(DocumentSnapshot doc) {
-        // Name — prefer Firestore value (user may have edited it during registration)
         String name = doc.getString("name");
-        if (name != null && !name.isEmpty()) {
-            tvPatientName.setText(name);
-        }
+        if (name != null && !name.isEmpty()) tvPatientName.setText(name);
 
-        // Age
         Long age = doc.getLong("age");
         tvAgeValue.setText(age != null ? age + " yrs" : "—");
 
-        // Blood group
-        String bloodGroup = doc.getString("bloodGroup");
-        tvBloodGroupValue.setText(
-                bloodGroup != null && !bloodGroup.isEmpty() ? bloodGroup : "—");
+        String bg = doc.getString("bloodGroup");
+        tvBloodGroupValue.setText(bg != null && !bg.isEmpty() ? bg : "—");
 
-        // Height
-        Double height = doc.getDouble("heightCm");
-        tvHeightValue.setText(height != null ? (int) Math.round(height) + " cm" : "—");
+        Double h = doc.getDouble("heightCm");
+        tvHeightValue.setText(h != null ? (int) Math.round(h) + " cm" : "—");
 
-        // Weight
-        Double weight = doc.getDouble("weightKg");
-        tvWeightValue.setText(weight != null ? (int) Math.round(weight) + " kg" : "—");
+        Double w = doc.getDouble("weightKg");
+        tvWeightValue.setText(w != null ? (int) Math.round(w) + " kg" : "—");
 
-        // Phone
         String phone = doc.getString("phone");
         tvPhoneValue.setText(phone != null && !phone.isEmpty() ? phone : "—");
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Back press — dashboard is the root, so exit app cleanly
-    // ─────────────────────────────────────────────────────────────
+    private void loadLanguageSetting(DocumentSnapshot doc) {
+        String code = doc.getString("alarmLanguage");
+        if (code == null || code.isEmpty()) { tvLanguage.setText("English"); return; }
+        for (int i = 0; i < LANGUAGE_CODES.length; i++) {
+            if (LANGUAGE_CODES[i].equals(code)) {
+                tvLanguage.setText(LANGUAGE_LABELS[i]);
+                return;
+            }
+        }
+        tvLanguage.setText("English");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Back press → move to background (don't destroy dashboard)
+    // ─────────────────────────────────────────────────────────────────────────
 
     @Override
     public void onBackPressed() {
-        // Move app to background instead of going back to registration
         moveTaskToBack(true);
     }
 }

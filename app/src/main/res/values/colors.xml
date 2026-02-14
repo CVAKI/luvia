@@ -26,4 +26,17 @@
     <color name="pill_icon_bg">#E3F2FD</color>
     <color name="pill_icon_border">#2196F3</color>
     <color name="reminder_active">#4CAF50</color>
+
+    <!-- ── Backgrounds ─────────────────────────── -->
+    <color name="bg_black">#0A0A0A</color>
+    <color name="card_surface">#161616</color>
+
+    <!-- ── Text ────────────────────────────────── -->
+    <color name="text_muted">#888888</color>
+    <color name="text_dim">#555555</color>
+
+    <!-- ── Fire Accent Palette ──────────────────── -->
+    <color name="accent_red">#D42221</color>
+    <color name="accent_orange">#FD6B26</color>
+    <color name="accent_yellow">#FDD92D</color>
 </resources>

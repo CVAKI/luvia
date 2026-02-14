@@ -67,6 +67,16 @@
                         android:textColor="#666666"
                         android:lineSpacingExtra="2dp" />
 
+                    <!-- NEW: Date range hint -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="📅 Set a start and end date when adding a reminder"
+                        android:textSize="13sp"
+                        android:textColor="#9C27B0"
+                        android:lineSpacingExtra="2dp" />
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
